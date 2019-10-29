@@ -1,6 +1,5 @@
 const express = require('express');
 const morgan = require('morgan');
-
 const app = express();
 
 // let's see what 'common' format looks like
@@ -9,7 +8,7 @@ app.use(morgan('common'));
 const apps = require('./playstore.js');
 
 app.get('/apps', (req, res) => {
-  const {search='', sort} = req.query;
+  const {sort, genre} = req.query;
 
   if (sort) {
     if (!['App', 'Rating'].includes(sort)) {
@@ -19,12 +18,20 @@ app.get('/apps', (req, res) => {
     }
   }
 
-  let results = apps
-    .filter(app =>
-      app
-        .App
-        .toLowerCase()
-        .includes(search.toLowerCase()));
+  if (genre) {
+    if (!['Action', 'Puzzle', 'Strategy', 'Casual', 'Arcade', 'Card'].includes(genre)) {
+      return res
+        .status(400)
+        .send('Genre must be Action, Puzzle, Strategy, Casual, Arcade, Card');
+    }
+  }
+
+  let results = apps;
+  
+  if (genre) {
+    results = results
+      .filter(app => app.Genres.toLowerCase().includes(genre.toLowerCase()));
+  }
 
   if (sort) {
     results
